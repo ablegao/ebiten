@@ -1,4 +1,4 @@
-package texture
+package ui
 
 import (
 	"bytes"
@@ -8,7 +8,7 @@ import (
 	_ "image/png"
 	"os"
 
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type TextureAtlas struct {
@@ -26,10 +26,10 @@ func (tp *TextureAtlas) Marshal(manager *TextureManager) error {
 	for _, v := range tp.Sprite {
 		nImg := v.Copy(tp.baseFile)
 		// tp.SaveToFiles(v.Name+".png", nImg, "./out/")
-		if img, err := ebiten.NewImageFromImage(nImg, ebiten.FilterLinear); err == nil {
-			tp.frames = append(tp.frames, v.Name)
-			manager.Add("#"+v.Name, img)
-		}
+		img := ebiten.NewImageFromImage(nImg)
+		tp.frames = append(tp.frames, v.Name)
+		manager.Add("#"+v.Name, img)
+
 	}
 
 	return nil

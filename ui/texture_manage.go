@@ -1,13 +1,12 @@
-package texture
+package ui
 
 import (
+	"bytes"
 	"encoding/xml"
 	"image"
-	"io/ioutil"
-	"os"
 	"sync"
 
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 var globalTextureManger *TextureManager
@@ -62,7 +61,7 @@ func (tm *TextureManager) Destroy() {
 	tm.rw.Unlock()
 }
 
-func (tm *TextureManager) LoadTexture(fname, fxml string) {
+func (tm *TextureManager) LoadTexture(fname, fxml []byte) {
 	MarshalTexture(tm, fname, fxml)
 }
 
@@ -70,46 +69,33 @@ func GetSprite(name string) *ebiten.Image {
 	return globalTextureManger.GetSprite(name)
 }
 
-func LoadTexture(fname, fxml string) (out *TextureAtlas, err error) {
+func LoadTexture(fname, fxml []byte) (out *TextureAtlas, err error) {
 	return MarshalTexture(globalTextureManger, fname, fxml)
 }
 
-func LoadResImg(res string) (*ebiten.Image, error) {
-	var img image.Image
+func LoadResImg(name string, res []byte) (*ebiten.Image, error) {
 
-	img_f, err := os.Open(res)
+	img, _, err := image.Decode(bytes.NewBuffer(res))
 	if err != nil {
 		return nil, err
 	}
-	defer img_f.Close()
-	img, _, err = image.Decode(img_f)
-	if err != nil {
-		return nil, err
-	}
-	return ebiten.NewImageFromImage(img, ebiten.FilterLinear)
+	eimg := ebiten.NewImageFromImage(img)
+	globalTextureManger.Add(name, eimg)
+	return eimg, nil
 }
 
-func MarshalTexture(manager *TextureManager, fname, fxml string) (out *TextureAtlas, err error) {
-	buf, err := ioutil.ReadFile(fxml)
-	if err != nil {
-		return
-	}
+func MarshalTexture(manager *TextureManager, fname, fxml []byte) (out *TextureAtlas, err error) {
 
 	out = new(TextureAtlas)
 	out.frames = []string{}
 
-	err = xml.Unmarshal(buf, &out)
+	err = xml.Unmarshal(fxml, &out)
 	if err != nil {
 		return
 	}
 	var img image.Image
-
-	img_f, err := os.Open(fname)
-	if err != nil {
-		return nil, err
-	}
-	defer img_f.Close()
-	img, _, err = image.Decode(img_f)
+	buf := bytes.NewBuffer(fname)
+	img, _, err = image.Decode(buf)
 	if err != nil {
 		return nil, err
 	}

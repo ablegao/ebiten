@@ -1,4 +1,4 @@
-package texture
+package ui
 
 import (
 	"image"
@@ -32,8 +32,6 @@ type TextureSprite struct {
 	R    string `xml:"r,attr"`
 }
 
-var POINT_0 = image.Point{0, 0}
-
 func (tp *TextureSprite) Copy(base image.Image) image.Image {
 	r := image.Rect(0, 0, tp.W, tp.H)
 
@@ -43,10 +41,9 @@ func (tp *TextureSprite) Copy(base image.Image) image.Image {
 
 	if tp.IsRetated() {
 		rotate270 := image.NewRGBA(image.Rect(0, 0, pic.Bounds().Dy(), pic.Bounds().Dx()))
-		// 矩阵旋转
+		//
 		for x := pic.Bounds().Min.Y; x < pic.Bounds().Max.Y; x++ {
 			for y := pic.Bounds().Max.X - 1; y >= pic.Bounds().Min.X; y-- {
-				// 设置像素点
 				rotate270.Set(x, pic.Bounds().Max.X-y, pic.At(y, x))
 			}
 		}
